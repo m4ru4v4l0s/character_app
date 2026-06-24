@@ -7,6 +7,8 @@ require("dotenv").config();
 const authRoutes = require("./routes/authRoutes");
 const characterRoutes = require("./routes/characterRoutes");
 const chatRoutes = require("./routes/chatRoutes");
+const carritoRoutes = require("./routes/carritoRoutes");
+
 
 const app = express();
 
@@ -39,6 +41,7 @@ app.use(session({
 app.use("/auth", authRoutes);
 app.use("/characters", characterRoutes);
 app.use("/chat", chatRoutes);
+app.use("/api/carrito", carritoRoutes);
 
 app.get("/", (req, res) => res.json({ message: "API funcando 🔥" }));
 

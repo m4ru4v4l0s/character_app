@@ -1,6 +1,9 @@
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { deleteCharacter } from "../services/characterService";
 import { useAuth } from "../context/AuthContext";
+import { agregarAlCarrito } from "../services/carritoService";
+
 
 export default function CharacterCard({ character, onDeleted }) {
   const navigate = useNavigate();
@@ -15,6 +18,19 @@ export default function CharacterCard({ character, onDeleted }) {
       alert("Error al eliminar");
     }
   };
+
+  const [mensaje, setMensaje] = useState("");
+
+async function handleAgregar() {
+  try {
+    await agregarAlCarrito(character.id_character);
+    setMensaje("¡Agregado!");
+    setTimeout(() => setMensaje(""), 2000);
+  } catch (err) {
+    setMensaje(err.message);
+  }
+}
+
 
   return (
     <div style={{
@@ -58,6 +74,10 @@ export default function CharacterCard({ character, onDeleted }) {
           {character.description?.slice(0, 80) || "Sin descripción"}...
         </p>
       </div>
+
+      <p className="character-price">${Number(character.price).toLocaleString("es-AR")}</p>
+{mensaje && <span>{mensaje}</span>}
+<button onClick={handleAgregar}>🛒 Agregar al carrito</button>
 
       <p style={{ color: "var(--muted)", fontSize: "12px" }}>
         por <span style={{ color: "var(--accent)" }}>@{character.creator}</span>

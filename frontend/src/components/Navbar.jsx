@@ -37,6 +37,9 @@ export default function Navbar() {
               <button className="btn-ghost">+ Crear personaje</button>
             </Link>
           )}
+
+          <Link to="/carrito">🛒 Carrito</Link>
+          
           <span style={{ color: "var(--muted)", fontSize: "13px" }}>
             {user.username}
             {/* ✅ Badge visual para el admin */}

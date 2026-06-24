@@ -1,26 +1,8 @@
 const chatService = require("../services/chatService");
 const characterService = require("../services/characterService");
+const carritoService = require("../services/carritoService");
 
-async function sendMessage(req, res) {
-  const { messages } = req.body;
-  const { id } = req.params;
-
-  if (!messages || !Array.isArray(messages)) {
-    return res.status(400).json({ error: "Mensajes inválidos" });
-  }
-
-  try {
-    const character = await characterService.getById(id, req.session.user.id);
-    if (!character) return res.status(404).json({ error: "Personaje no encontrado" });
-
-    const reply = await chatService.chat(character, messages);
-    res.json({ reply });
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: "Error al generar respuesta" });
-  }
-}
-
+// POST /api/chat/:id
 async function sendMessage(req, res) {
   const { messages } = req.body;
   const { id } = req.params;
@@ -33,13 +15,21 @@ async function sendMessage(req, res) {
   }
 
   try {
-    const character = await characterService.getById(id, req.session.user.id);
+    const userId = req.usuario.id; // Unificado con el resto de controllers
+
+    const character = await characterService.getById(id, userId);
     console.log("🎭 Personaje encontrado:", character);
 
     if (!character) return res.status(404).json({ error: "Personaje no encontrado" });
 
+    // Verificar que el usuario tiene acceso: es el creador o lo compró
+    const acceso = await carritoService.tieneAcceso(userId, id);
+    if (!acceso) {
+      return res.status(403).json({ error: "No tenés acceso a este personaje. ¡Compralo primero!" });
+    }
+
     const reply = await chatService.chat(character, messages);
-    console.log("✅ Respuesta de Groq:", reply);
+    console.log("✅ Respuesta generada:", reply);
 
     res.json({ reply });
   } catch (err) {
@@ -47,4 +37,5 @@ async function sendMessage(req, res) {
     res.status(500).json({ error: "Error al generar respuesta" });
   }
 }
+
 module.exports = { sendMessage };
