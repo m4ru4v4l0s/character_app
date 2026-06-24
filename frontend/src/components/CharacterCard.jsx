@@ -7,13 +7,13 @@ import { agregarAlCarrito } from "../services/carritoService";
 
 export default function CharacterCard({ character, onDeleted }) {
   const navigate = useNavigate();
-  const { isAdmin } = useAuth(); // ✅ reemplaza user + isOwner
+  const { isAdmin } = useAuth(); 
 
   const handleDelete = async () => {
     if (!confirm(`¿Eliminar a ${character.name}?`)) return;
     try {
-      await deleteCharacter(character.id);
-      onDeleted(character.id);
+      await deleteCharacter(character.id_character);
+      onDeleted(character.id_character);
     } catch {
       alert("Error al eliminar");
     }
@@ -21,15 +21,15 @@ export default function CharacterCard({ character, onDeleted }) {
 
   const [mensaje, setMensaje] = useState("");
 
-async function handleAgregar() {
-  try {
-    await agregarAlCarrito(character.id_character);
-    setMensaje("¡Agregado!");
-    setTimeout(() => setMensaje(""), 2000);
-  } catch (err) {
-    setMensaje(err.message);
+  async function handleAgregar() {
+    try {
+      await agregarAlCarrito(character.id_character);
+      setMensaje("¡Agregado!");
+      setTimeout(() => setMensaje(""), 2000);
+    } catch (err) {
+      setMensaje(err.message);
+    }
   }
-}
 
 
   return (
@@ -76,8 +76,8 @@ async function handleAgregar() {
       </div>
 
       <p className="character-price">${Number(character.price).toLocaleString("es-AR")}</p>
-{mensaje && <span>{mensaje}</span>}
-<button onClick={handleAgregar}>🛒 Agregar al carrito</button>
+      {mensaje && <span>{mensaje}</span>}
+      <button onClick={handleAgregar}>🛒 Agregar al carrito</button>
 
       <p style={{ color: "var(--muted)", fontSize: "12px" }}>
         por <span style={{ color: "var(--accent)" }}>@{character.creator}</span>
@@ -85,14 +85,13 @@ async function handleAgregar() {
 
       <div style={{ display: "flex", gap: "8px", marginTop: "auto" }}>
         <button className="btn-primary" style={{ flex: 1 }}
-          onClick={() => navigate(`/chat/${character.id}`)}>
+          onClick={() => navigate(`/chat/${character.id_character}`)}>
           💬 Chatear
         </button>
-        {/* ✅ Solo admin ve editar y eliminar */}
         {isAdmin && (
           <>
             <button className="btn-ghost"
-              onClick={() => navigate(`/edit/${character.id}`)}>✏️</button>
+              onClick={() => navigate(`/edit/${character.id_character}`)}>✏️</button>
             <button className="btn-danger" onClick={handleDelete}>🗑️</button>
           </>
         )}
