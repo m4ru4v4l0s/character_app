@@ -11,6 +11,7 @@ async function buscarPedidoPendiente(userId) {
 
 // Crea un pedido nuevo en estado Pendiente
 async function crearPedido(userId) {
+  console.log("Creando pedido para usuario:", userId);
   const [result] = await pool.query(
     `INSERT INTO pedidos (fecha, user_id, state, total) VALUES (NOW(), ?, 'Pendiente', 0)`,
     [userId]
@@ -52,11 +53,11 @@ async function agregarAlCarrito(userId, characterId) {
   if (chars.length === 0) throw new Error("Personaje no encontrado o no disponible");
 
   // 2. Verificar que el usuario no sea el creador (no tiene sentido comprarse a sí mismo)
-  const [own] = await pool.query(
-    `SELECT id_character FROM characters WHERE id_character = ? AND user_id = ?`,
-    [characterId, userId]
-  );
-  if (own.length > 0) throw new Error("No podés agregar al carrito un personaje que vos creaste");
+  // const [own] = await pool.query(
+  //   `SELECT id_character FROM characters WHERE id_character = ? AND user_id = ?`,
+  //   [characterId, userId]
+  // );
+  // if (own.length > 0) throw new Error("No podés agregar al carrito un personaje que vos creaste");
 
   // 3. Buscar pedido pendiente o crear uno nuevo
   let pedido = await buscarPedidoPendiente(userId);

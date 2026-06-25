@@ -8,6 +8,7 @@ import Register from "./pages/Register";
 import CreateCharacter from "./pages/CreateCharacter";
 import EditCharacter from "./pages/EditCharacter";
 import Chat from "./pages/Chat";
+import Carrito from "./pages/Carrito";
 
 export default function App() {
   return (
@@ -28,6 +29,9 @@ export default function App() {
           } />
           <Route path="/chat/:id" element={
             <ProtectedRoute><Chat /></ProtectedRoute>
+          } />
+          <Route path="/carrito" element={
+            <ProtectedRoute><Carrito /></ProtectedRoute>
           } />
           <Route path="*" element={<Navigate to="/" />} />
         </Routes>

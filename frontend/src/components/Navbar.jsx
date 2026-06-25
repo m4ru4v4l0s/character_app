@@ -9,7 +9,7 @@ export default function Navbar() {
     await logout();
     navigate("/login");
   };
-
+  console.log(isAdmin)
   return (
     <nav style={{
       background: "var(--surface)",

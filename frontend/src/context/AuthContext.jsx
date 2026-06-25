@@ -24,7 +24,7 @@ export function AuthProvider({ children }) {
   };
 
   // ✅ se expone isAdmin para usar en componentes
-  const isAdmin = user?.rol === "admin";
+  const isAdmin = user?.rol === "Admin";
 
   return (
     <AuthContext.Provider value={{ user, setUser, logout, loading, isAdmin }}>

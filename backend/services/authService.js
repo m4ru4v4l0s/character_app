@@ -27,7 +27,7 @@ async function login(email, password) {
   const match = await bcrypt.compare(password, user.password);
   if (!match) throw new Error("Contraseña incorrecta");
 
-  // ✅ Se agrega rol al token
+  //  Se agrega rol al token
   const userData = {
     id: user.id,
     username: user.username,

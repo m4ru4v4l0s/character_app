@@ -38,7 +38,7 @@ async function create(req, res) {
   try {
     const character = await characterService.create(
       req.body,
-      req.usuario.id
+      1
     );
     res.status(201).json(character);
   } catch (err) {
