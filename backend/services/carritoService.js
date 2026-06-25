@@ -4,7 +4,7 @@ const pool = require("../database");
 async function buscarPedidoPendiente(userId) {
   const [rows] = await pool.query(
     `SELECT * FROM pedidos WHERE user_id = ? AND state = 'Pendiente' LIMIT 1`,
-    [userId]
+    [userId],
   );
   return rows[0] || null;
 }
@@ -14,7 +14,7 @@ async function crearPedido(userId) {
   console.log("Creando pedido para usuario:", userId);
   const [result] = await pool.query(
     `INSERT INTO pedidos (fecha, user_id, state, total) VALUES (NOW(), ?, 'Pendiente', 0)`,
-    [userId]
+    [userId],
   );
   return { id_pedido: result.insertId };
 }
@@ -24,7 +24,7 @@ async function crearPedido(userId) {
 async function agregarDetalle(pedidoId, characterId) {
   await pool.query(
     `INSERT IGNORE INTO detalles (pedido_id, character_id) VALUES (?, ?)`,
-    [pedidoId, characterId]
+    [pedidoId, characterId],
   );
 }
 
@@ -39,7 +39,7 @@ async function actualizarTotal(pedidoId) {
        WHERE d.pedido_id = ?
      )
      WHERE p.id_pedido = ?`,
-    [pedidoId, pedidoId]
+    [pedidoId, pedidoId],
   );
 }
 
@@ -48,9 +48,10 @@ async function agregarAlCarrito(userId, characterId) {
   // 1. Verificar que el personaje existe y es público
   const [chars] = await pool.query(
     `SELECT id_character, name, price FROM characters WHERE id_character = ? AND is_public = 1`,
-    [characterId]
+    [characterId],
   );
-  if (chars.length === 0) throw new Error("Personaje no encontrado o no disponible");
+  if (chars.length === 0)
+    throw new Error("Personaje no encontrado o no disponible");
 
   // 2. Verificar que el usuario no sea el creador (no tiene sentido comprarse a sí mismo)
   // const [own] = await pool.query(
@@ -71,7 +72,10 @@ async function agregarAlCarrito(userId, characterId) {
   // 5. Recalcular el total
   await actualizarTotal(pedido.id_pedido);
 
-  return { message: "Personaje agregado al carrito", pedidoId: pedido.id_pedido };
+  return {
+    message: "Personaje agregado al carrito",
+    pedidoId: pedido.id_pedido,
+  };
 }
 
 // Ver el carrito actual del usuario
@@ -85,7 +89,7 @@ async function verCarrito(userId) {
      JOIN characters c ON d.character_id = c.id_character
      JOIN users u ON c.user_id = u.id_user
      WHERE d.pedido_id = ?`,
-    [pedido.id_pedido]
+    [pedido.id_pedido],
   );
 
   return { pedidoId: pedido.id_pedido, items, total: pedido.total };
@@ -98,7 +102,7 @@ async function eliminarDelCarrito(userId, characterId) {
 
   await pool.query(
     `DELETE FROM detalles WHERE pedido_id = ? AND character_id = ?`,
-    [pedido.id_pedido, characterId]
+    [pedido.id_pedido, characterId],
   );
 
   await actualizarTotal(pedido.id_pedido);
@@ -112,14 +116,13 @@ async function confirmarCompra(userId) {
 
   const [items] = await pool.query(
     `SELECT * FROM detalles WHERE pedido_id = ?`,
-    [pedido.id_pedido]
+    [pedido.id_pedido],
   );
   if (items.length === 0) throw new Error("El carrito está vacío");
 
-  await pool.query(
-    `UPDATE pedidos SET state = 'Pago' WHERE id_pedido = ?`,
-    [pedido.id_pedido]
-  );
+  await pool.query(`UPDATE pedidos SET state = 'Pago' WHERE id_pedido = ?`, [
+    pedido.id_pedido,
+  ]);
 
   return { message: "Compra confirmada", pedidoId: pedido.id_pedido };
 }
@@ -129,7 +132,7 @@ async function tieneAcceso(userId, characterId) {
   // Es el creador
   const [creador] = await pool.query(
     `SELECT id_character FROM characters WHERE id_character = ? AND user_id = ?`,
-    [characterId, userId]
+    [characterId, userId],
   );
   if (creador.length > 0) return true;
 
@@ -138,7 +141,7 @@ async function tieneAcceso(userId, characterId) {
     `SELECT d.id_detalle FROM detalles d
      JOIN pedidos p ON d.pedido_id = p.id_pedido
      WHERE p.user_id = ? AND d.character_id = ? AND p.state = 'Pago'`,
-    [userId, characterId]
+    [userId, characterId],
   );
   return compra.length > 0;
 }

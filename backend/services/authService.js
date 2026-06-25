@@ -6,13 +6,13 @@ const pool = require("../database");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 
-async function register(username, email, password, rol = "usuario") {
+async function register(username, email, password) {
   const hash = await bcrypt.hash(password, 10);
   const [result] = await pool.query(
-    "INSERT INTO users (username, email, password, rol) VALUES (?, ?, ?, ?)",
-    [username, email, hash, rol],
+    "INSERT INTO users (username, email, password) VALUES (?, ?, ?)",
+    [username, email, hash],
   );
-  const user = { id: result.insertId, username, email, rol };
+  const user = { id: result.insertId, username, email };
   const token = jwt.sign(user, process.env.JWT_SECRET);
   return { user, token };
 }
@@ -29,7 +29,7 @@ async function login(email, password) {
 
   //  Se agrega rol al token
   const userData = {
-    id: user.id,
+    id: user.id_user,
     username: user.username,
     email: user.email,
     rol: user.rol,

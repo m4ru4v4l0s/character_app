@@ -1,12 +1,16 @@
 const authService = require("../services/authService");
 
 async function register(req, res) {
-  const { username, email, password, rol } = req.body; 
+  const { username, email, password } = req.body;
   if (!username || !email || !password)
     return res.status(400).json({ error: "Todos los campos son obligatorios" });
 
   try {
-    const { user, token } = await authService.register(username, email, password, rol);
+    const { user, token } = await authService.register(
+      username,
+      email,
+      password,
+    );
     res.status(201).json({ message: "Registro exitoso", user, token });
   } catch (err) {
     res.status(400).json({ error: err.message });

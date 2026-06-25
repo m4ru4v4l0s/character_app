@@ -3,8 +3,7 @@ const carritoService = require("../services/carritoService");
 // POST /api/carrito/:characterId
 async function agregar(req, res) {
   try {
-    console.log(req.usuario)
-    const userId = 1; // por ahora esta harcodeado, luego se reemplazará por req.usuario.id pero ahora no se guarda el id 
+    const userId = req.usuario.id; // por ahora esta harcodeado, luego se reemplazará por req.usuario.id pero ahora no se guarda el id
     const characterId = req.params.characterId;
     const result = await carritoService.agregarAlCarrito(userId, characterId);
     res.status(200).json(result);
@@ -17,6 +16,7 @@ async function agregar(req, res) {
 async function ver(req, res) {
   try {
     const userId = req.usuario.id;
+    console.log(req.usuario);
     const carrito = await carritoService.verCarrito(userId);
     res.json(carrito);
   } catch (err) {
