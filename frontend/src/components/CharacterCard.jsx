@@ -8,6 +8,8 @@ import { agregarAlCarrito } from "../services/carritoService";
 export default function CharacterCard({ character, onDeleted }) {
   const navigate = useNavigate();
   const { isAdmin } = useAuth(); 
+  const [cantidad, setCantidad] = useState(1);
+  const [mensaje, setMensaje] = useState("");
 
   const handleDelete = async () => {
     if (!confirm(`¿Eliminar a ${character.name}?`)) return;
@@ -19,12 +21,11 @@ export default function CharacterCard({ character, onDeleted }) {
     }
   };
 
-  const [mensaje, setMensaje] = useState("");
-
   async function handleAgregar() {
     try {
-      await agregarAlCarrito(character.id_character);
-      setMensaje("¡Agregado!");
+      await agregarAlCarrito(character.id_character, cantidad);
+      setMensaje(`¡${cantidad} agregado${cantidad > 1 ? "s" : ""}!`);
+      setCantidad(1);
       setTimeout(() => setMensaje(""), 2000);
     } catch (err) {
       setMensaje(err.message);
@@ -77,7 +78,26 @@ export default function CharacterCard({ character, onDeleted }) {
 
       <p className="character-price">${Number(character.price).toLocaleString("es-AR")}</p>
       {mensaje && <span>{mensaje}</span>}
-      <button onClick={handleAgregar}>🛒 Agregar al carrito</button>
+      <div className="carrito-actions">
+        <div className="carrito-cantidad-selector">
+          <button
+            className="btn-cantidad"
+            onClick={() => setCantidad(Math.max(1, cantidad - 1))}
+          >
+            −
+          </button>
+          <span className="cantidad-numero">{cantidad}</span>
+          <button
+            className="btn-cantidad"
+            onClick={() => setCantidad(cantidad + 1)}
+          >
+            +
+          </button>
+        </div>
+        <button className="btn-add-cart" onClick={handleAgregar}>
+          🛒 Agregar
+        </button>
+      </div>
 
       <p style={{ color: "var(--muted)", fontSize: "12px" }}>
         por <span style={{ color: "var(--accent)" }}>@{character.creator}</span>

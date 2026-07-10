@@ -21,10 +21,11 @@ async function crearPedido(userId) {
 
 // Agrega un personaje al detalle del pedido
 // La tabla detalles tiene UNIQUE(pedido_id, character_id), asi no se duplica
-async function agregarDetalle(pedidoId, characterId) {
+async function agregarDetalle(pedidoId, characterId, cantidad = 1) {
   await pool.query(
-    `INSERT IGNORE INTO detalles (pedido_id, character_id) VALUES (?, ?)`,
-    [pedidoId, characterId],
+    `INSERT INTO detalles (pedido_id, character_id, cantidad) VALUES (?, ?, ?)
+     ON DUPLICATE KEY UPDATE cantidad = cantidad + ?`,
+    [pedidoId, characterId, cantidad, cantidad],
   );
 }
 
@@ -33,7 +34,7 @@ async function actualizarTotal(pedidoId) {
   await pool.query(
     `UPDATE pedidos p
      SET total = (
-       SELECT COALESCE(SUM(c.price), 0)
+       SELECT COALESCE(SUM(c.price * d.cantidad), 0)
        FROM detalles d
        JOIN characters c ON d.character_id = c.id_character
        WHERE d.pedido_id = ?
@@ -44,7 +45,7 @@ async function actualizarTotal(pedidoId) {
 }
 
 // Función principal: agrega un personaje al carrito
-async function agregarAlCarrito(userId, characterId) {
+async function agregarAlCarrito(userId, characterId, cantidad = 1) {
   // 1. Verificar que el personaje existe y es público
   const [chars] = await pool.query(
     `SELECT id_character, name, price FROM characters WHERE id_character = ? AND is_public = 1`,
@@ -66,8 +67,8 @@ async function agregarAlCarrito(userId, characterId) {
     pedido = await crearPedido(userId);
   }
 
-  // 4. Agregar el personaje al detalle (INSERT IGNORE evita duplicados)
-  await agregarDetalle(pedido.id_pedido, characterId);
+  // 4. Agregar el personaje al detalle
+  await agregarDetalle(pedido.id_pedido, characterId, cantidad);
 
   // 5. Recalcular el total
   await actualizarTotal(pedido.id_pedido);
@@ -84,7 +85,7 @@ async function verCarrito(userId) {
   if (!pedido) return { items: [], total: 0 };
 
   const [items] = await pool.query(
-    `SELECT c.id_character, c.name, c.description, c.avatar_url, c.price, u.username as creator
+    `SELECT d.cantidad, c.id_character, c.name, c.description, c.avatar_url, c.price, u.username as creator
      FROM detalles d
      JOIN characters c ON d.character_id = c.id_character
      JOIN users u ON c.user_id = u.id_user
@@ -127,6 +128,24 @@ async function confirmarCompra(userId) {
   return { message: "Compra confirmada", pedidoId: pedido.id_pedido };
 }
 
+// Actualizar la cantidad de un personaje en el carrito
+async function actualizarCantidad(userId, characterId, cantidad) {
+  if (cantidad < 1) throw new Error("La cantidad debe ser al menos 1");
+
+  const pedido = await buscarPedidoPendiente(userId);
+  if (!pedido) throw new Error("No tenés un carrito activo");
+
+  const [result] = await pool.query(
+    `UPDATE detalles SET cantidad = ? WHERE pedido_id = ? AND character_id = ?`,
+    [cantidad, pedido.id_pedido, characterId],
+  );
+
+  if (result.affectedRows === 0) throw new Error("Personaje no encontrado en el carrito");
+
+  await actualizarTotal(pedido.id_pedido);
+  return { message: "Cantidad actualizada" };
+}
+
 // Verificar si el usuario tiene acceso a un personaje (lo compró o es el creador)
 async function tieneAcceso(userId, characterId) {
   // Es el creador
@@ -152,4 +171,5 @@ module.exports = {
   eliminarDelCarrito,
   confirmarCompra,
   tieneAcceso,
+  actualizarCantidad,
 };

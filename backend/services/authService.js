@@ -12,7 +12,7 @@ async function register(username, email, password) {
     "INSERT INTO users (username, email, password) VALUES (?, ?, ?)",
     [username, email, hash],
   );
-  const user = { id: result.insertId, username, email };
+  const user = { id: result.insertId, username, email, rol: "user" };
   const token = jwt.sign(user, process.env.JWT_SECRET);
   return { user, token };
 }

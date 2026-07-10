@@ -10,10 +10,14 @@ export async function getCarrito() {
 }
 
 // Agregar un personaje al carrito
-export async function agregarAlCarrito(characterId) {
+export async function agregarAlCarrito(characterId, cantidad = 1) {
   const res = await fetch(`${API}/carrito/${characterId}`, {
     method: "POST",
-    headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
+    headers: {
+      Authorization: `Bearer ${localStorage.getItem("token")}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ cantidad }),
   });
   const data = await res.json();
   if (!res.ok) throw new Error(data.error || "Error al agregar al carrito");
@@ -28,6 +32,21 @@ export async function eliminarDelCarrito(characterId) {
   });
   const data = await res.json();
   if (!res.ok) throw new Error(data.error || "Error al eliminar del carrito");
+  return data;
+}
+
+// Actualizar cantidad de un personaje en el carrito
+export async function actualizarCantidad(characterId, cantidad) {
+  const res = await fetch(`${API}/carrito/${characterId}`, {
+    method: "PUT",
+    headers: {
+      Authorization: `Bearer ${localStorage.getItem("token")}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ cantidad }),
+  });
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.error || "Error al actualizar cantidad");
   return data;
 }
 

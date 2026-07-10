@@ -13,7 +13,7 @@ async function search(req, res) {
   try {
     const characters = await characterService.search(
       req.query.q || "",
-      req.usuario.id
+      req.usuario.id,
     );
     res.json(characters);
   } catch (err) {
@@ -25,7 +25,7 @@ async function getById(req, res) {
   try {
     const character = await characterService.getById(
       req.params.id,
-      req.usuario.id
+      req.usuario.id,
     );
     if (!character) return res.status(404).json({ error: "No encontrado" });
     res.json(character);
@@ -36,10 +36,7 @@ async function getById(req, res) {
 
 async function create(req, res) {
   try {
-    const character = await characterService.create(
-      req.body,
-      1
-    );
+    const character = await characterService.create(req.body, req.usuario.id);
     res.status(201).json(character);
   } catch (err) {
     res.status(400).json({ error: err.message });
@@ -51,7 +48,7 @@ async function update(req, res) {
     const character = await characterService.update(
       req.params.id,
       req.body,
-      req.usuario.id
+      req.usuario.id,
     );
     res.json(character);
   } catch (err) {
@@ -61,10 +58,7 @@ async function update(req, res) {
 
 async function remove(req, res) {
   try {
-    const result = await characterService.remove(
-      req.params.id,
-      req.usuario.id
-    );
+    const result = await characterService.remove(req.params.id, req.usuario.id);
     res.json(result);
   } catch (err) {
     res.status(400).json({ error: err.message });

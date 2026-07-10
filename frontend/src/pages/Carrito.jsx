@@ -1,6 +1,11 @@
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { getCarrito, eliminarDelCarrito, confirmarCompra } from "../services/carritoService";
+import {
+  actualizarCantidad,
+  confirmarCompra,
+  eliminarDelCarrito,
+  getCarrito,
+} from "../services/carritoService";
 
 export default function Carrito() {
   const [carrito, setCarrito] = useState({ items: [], total: 0 });
@@ -35,6 +40,27 @@ export default function Carrito() {
     }
   }
 
+  async function handleSumar(item) {
+    try {
+      await actualizarCantidad(item.id_character, item.cantidad + 1);
+      await cargarCarrito();
+    } catch (err) {
+      setError(err.message);
+    }
+  }
+
+  async function handleRestar(item) {
+    if (item.cantidad <= 1) {
+      return handleEliminar(item.id_character);
+    }
+    try {
+      await actualizarCantidad(item.id_character, item.cantidad - 1);
+      await cargarCarrito();
+    } catch (err) {
+      setError(err.message);
+    }
+  }
+
   async function handleConfirmar() {
     try {
       await confirmarCompra();
@@ -46,7 +72,8 @@ export default function Carrito() {
     }
   }
 
-  if (loading) return <div className="carrito-loading">Cargando carrito...</div>;
+  if (loading)
+    return <div className="carrito-loading">Cargando carrito...</div>;
 
   return (
     <div className="carrito-container">
@@ -78,10 +105,28 @@ export default function Carrito() {
                   <p className="carrito-desc">{item.description}</p>
                 </div>
                 <div className="carrito-item-precio">
-                  <span>${Number(item.price).toLocaleString("es-AR")}</span>
+                  <div className="carrito-cantidad">
+                    <button
+                      onClick={() => handleRestar(item)}
+                      className="btn-cantidad"
+                    >
+                      −
+                    </button>
+                    <span className="cantidad-numero">{item.cantidad}</span>
+                    <button
+                      onClick={() => handleSumar(item)}
+                      className="btn-cantidad"
+                    >
+                      +
+                    </button>
+                  </div>
+                  <span className="carrito-subtotal">
+                    ${Number(item.price * item.cantidad).toLocaleString("es-AR")}
+                  </span>
                   <button
                     onClick={() => handleEliminar(item.id_character)}
                     className="btn-eliminar"
+                    title="Eliminar del carrito"
                   >
                     ✕
                   </button>
